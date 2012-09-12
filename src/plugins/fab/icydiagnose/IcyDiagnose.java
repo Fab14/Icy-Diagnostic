@@ -1,66 +1,54 @@
 package plugins.fab.icydiagnose;
 
+import icy.file.FileUtil;
+import icy.gui.dialog.MessageDialog;
 import icy.plugin.abstract_.PluginActionable;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Date;
+
+import javax.swing.JFileChooser;
 
 public class IcyDiagnose extends PluginActionable {
 
-	
-
+		
 	@Override
 	public void run() {
 
-		
-		outputIcyFiles();
-
-	}
-
-	private void outputIcyFiles() {
-
-		ArrayList<File> outPut = new ArrayList<File>();
-		
-		File startFile = null;
-		try {
-		
-			startFile = new File( new java.io.File(".").getCanonicalPath() );			
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-		
-		
-		if ( startFile == null )
-		{			
+		File diagnoseFile = getOutPutFile();
+		if (diagnoseFile == null )
+		{
+			MessageDialog.showDialog( "No output file: diagnose canceled.", MessageDialog.INFORMATION_MESSAGE );
 			return;
 		}
 		
-		buildRecursiveFileList( startFile , outPut );
-
-		for ( File file : outPut )
-		{
-			System.out.println( file );
-		}
-
-	}
-
-	private ArrayList<File> buildRecursiveFileList(File startFile, ArrayList<File> outPutFileList) {
+		Logger logger = new Logger( diagnoseFile );
+				
+		logger.outTitle( "Icy diagnose file generated on " + new Date( ).toString() );
 		
-		for ( File file : startFile.listFiles() )
-		{
-			if ( file.isDirectory() )
-			{
-				buildRecursiveFileList( file , outPutFileList );
-			}
-			outPutFileList.add( file );					
-		}
-		return outPutFileList;
+		GeneralInfo.outPutGeneralInfo( logger );
+		
+		WriteAccessTest.writeAccessTest( logger );
+		RecursiveFileList.outputIcyFiles( logger );
+		
+		
+		logger.close();
 		
 	}
 
-	
+	File getOutPutFile()
+	{
+
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+		int returnValue = fileChooser.showDialog( null , "Save Diagnose file");
+		if(returnValue == JFileChooser.APPROVE_OPTION)
+		{
+			File XMLAppendfile = fileChooser.getSelectedFile();	
+			XMLAppendfile = new File ( FileUtil.setExtension( XMLAppendfile.getAbsolutePath() , ".txt" ) );
+			return XMLAppendfile;
+		}
+		return null;
+	}
 	
 }
