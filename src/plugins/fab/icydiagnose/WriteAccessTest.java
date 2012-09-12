@@ -18,6 +18,8 @@ public class WriteAccessTest {
 		try {
 			File testFile = new File( new java.io.File(".").getCanonicalPath()+FileUtil.separator + "icy diagnose test file.txt" );
 			
+			logger.out( "Test file: " + testFile.toString() );
+			
 			// write in it.
 			
 			FileWriter fstream = new FileWriter( testFile , false );
